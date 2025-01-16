@@ -19,9 +19,10 @@ README: [日本語](README.md) | English (WIP)
 
 技術的詳細に関してはブログ記事と、リンク先のスライドをご覧ください。
 
-[XSS using dirty Content Type in cloud era](https://speakerdeck.com/flatt_security/xss-using-dirty-content-type-in-cloud-era)
-[オブジェクトストレージにおけるファイルアップロードセキュリティ - クラウド時代に"悪意のあるデータの書き込み"を再考する](https://blog.flatt.tech/entry/object_storage)
-[S3 経由で XSS!?不可思議な Content-Type の値を利用する攻撃手法の新観点](https://blog.flatt.tech/entry/content_type)
+- [XSS using dirty Content Type in cloud era](https://speakerdeck.com/flatt_security/xss-using-dirty-content-type-in-cloud-era)
+- [Are you content with our current attacks on Content-Type?](https://speakerdeck.com/flatt_security/are-you-content-with-our-current-attacks-on-content-type)
+- [オブジェクトストレージにおけるファイルアップロードセキュリティ - クラウド時代に"悪意のあるデータの書き込み"を再考する](https://blog.flatt.tech/entry/object_storage)
+- [S3 経由で XSS!?不可思議な Content-Type の値を利用する攻撃手法の新観点](https://blog.flatt.tech/entry/content_type)
 
 また、偉大なる先駆者である[Sergey Bobrov](https://github.com/BlackFan)氏の研究が、私たちの研究において理解を深める助けになりました。この場を借りて、お礼を申し上げます。
 
