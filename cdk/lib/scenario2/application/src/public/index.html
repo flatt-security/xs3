@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <title>XS3 - scenario 2</title>
+  </head>
+  <body>
+    <h1>XS3 - scenario 2</h1>
+    <p>This is a simple file upload form.</p>
+    <form name="fileForm">
+      <input
+        type="file"
+        name="file"
+        id="file"
+      />
+      <input
+        type="submit"
+        value="Submit"
+      />
+    </form>
+    <p id="result"></p>
+    <hr />
+    <p>Report URL:</p>
+    <p>This is a form to allow administrators to view the URL of this site.</p>
+    <form name="reportForm">
+      <input
+        type="text"
+        name="report_url"
+        id="report_url"
+      />
+      <input
+        type="submit"
+        value="Submit"
+      />
+    </form>
+    <p id="result_report"></p>
+    <div id="reporter_result"></div>
+  </body>
+  <script>
+    document.fileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.fileForm.file.files[0];
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contentType: file.type,
+          length: file.size,
+        }),
+      });
+
+      if (!response.ok) {
+        document.getElementById('result').innerText = 'Failed to get presigned URL';
+        return false;
+      }
+      const responseJson = await response.json();
+      const uploadUrl = responseJson.url;
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file,
+      });
+
+      document.getElementById('result').innerHTML = `<img src="/upload/${responseJson.filename}" />`;
+    });
+
+    document.reportForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const reportUrl = document.reportForm.report_url.value;
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: reportUrl }),
+      });
+      const result = await response.text();
+      document.getElementById('result_report').innerText = result;
+      document.getElementById('reporter_result').innerHTML = '<p> Waiting for report to be ready...</p>';
+      const counter = [];
+      while (counter.length < 20) {
+        const response = await fetch(`/api/report/${reportUrl.split('/').pop()}`);
+        if (response.status === 200) {
+          break;
+        }
+        counter.push(1);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      document.getElementById('reporter_result').innerHTML = `<iframe src="/delivery/${reportUrl.split('/').pop()}" width="100%" height="500px"></iframe>`;
+    });
+  </script>
+</html>

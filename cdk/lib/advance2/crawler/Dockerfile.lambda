@@ -1,0 +1,44 @@
+ARG FUNCTION_DIR="/home/pptruser"
+
+# Application build
+FROM --platform=linux/amd64 node:20-buster as nodebuild
+ARG FUNCTION_DIR
+LABEL environment=build
+RUN mkdir -p ${FUNCTION_DIR}
+WORKDIR ${FUNCTION_DIR} 
+COPY ./src ${FUNCTION_DIR} 
+RUN npm install
+RUN npm run build
+RUN npm prune --production
+
+# RIC build
+FROM --platform=linux/amd64 node:20-buster as aws-lambda-ric-build-image
+LABEL environment=build-ric
+RUN apt-get update && \
+    apt-get install -y \
+    g++ \
+    make \
+    cmake \
+    unzip \
+    libcurl4-openssl-dev
+RUN mkdir -p /ric
+WORKDIR /ric
+COPY ./rie/aws-lambda-rie .
+COPY ./rie/entry.sh .
+RUN npm install aws-lambda-ric
+
+FROM --platform=linux/amd64 ghcr.io/puppeteer/puppeteer:22.6.0
+ARG FUNCTION_DIR
+ENV PUPPETEER_CACHE_DIR ${FUNCTION_DIR}/.cache/puppeteer
+USER root
+RUN mkdir -p /ric
+COPY --from=aws-lambda-ric-build-image /ric /ric
+RUN chmod 755 /ric/entry.sh
+RUN chmod 755 /ric/aws-lambda-rie
+WORKDIR ${FUNCTION_DIR}
+COPY --from=nodebuild ${FUNCTION_DIR}/dist ${FUNCTION_DIR}
+RUN npm install @aws-sdk/client-s3
+ENTRYPOINT ["/ric/entry.sh"]
+CMD ["index.handler"]
+
+

@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>XS3 - scenario Advanced 1 - File Viewer</title>
+    <script>
+      const denyMimeSubTypes = ['html', 'javascript', 'xml', 'json', 'svg', 'xhtml', 'xsl'];
+
+      const extractMimeType = (contentTypeAndParams) => {
+        const [contentType, ...params] = contentTypeAndParams.split(';');
+        console.log(`Extracting content type: ${contentType}`);
+        console.log(`Extracting params: ${JSON.stringify(params)}`);
+        const [type, subtype] = contentType.split('/');
+        console.log(`Extracting type: ${type}`);
+        console.log(`Extracting subtype: ${subtype}`);
+        return { type, subtype, params };
+      };
+
+      const isDenyMimeSubType = (contentType) => {
+        console.log(`Checking content type: ${contentType}`);
+        const { subtype } = extractMimeType(contentType);
+        return denyMimeSubTypes.includes(subtype.trim().toLowerCase());
+      };
+
+      window.onload = async () => {
+        const url = new URL(window.location.href);
+        const path = url.pathname.slice(1).split('/');
+        path.shift();
+        const key = path.join('/');
+        console.log(`Loading file: /${key}`);
+
+        const response = await fetch(`/${key}`);
+        if (!response.ok) {
+          console.error(`Failed to load file: /${key}`);
+          document.body.innerHTML = '<h1>Failed to load file</h1>';
+          return;
+        }
+        const contentType = response.headers.get('content-type');
+        if (isDenyMimeSubType(contentType)) {
+          console.error(`Failed to load file: /${key}`);
+          document.body.innerHTML = '<h1>Failed to load file due to invalid content type</h1>';
+          return;
+        }
+        const blobUrl = URL.createObjectURL(await response.blob());
+        document.body.innerHTML = `<iframe src="${blobUrl}" style="width: 100%; height: 100%"></iframe>`;
+      };
+    </script>
+  </head>
+  <body></body>
+</html>

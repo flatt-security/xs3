@@ -1,0 +1,27 @@
+version: '3.7'
+services:
+  base:
+    build:
+      context: ./develop/base
+      dockerfile: Dockerfile
+    image: ts-app-base
+    container_name: ts-app-base
+    working_dir: /app
+  cdk:
+    build:
+      context: ./develop/cdk-node
+      dockerfile: Dockerfile
+    image: ts-app-cdk
+    container_name: cdk
+    volumes:
+      - ./develop/cdk-node/init.sh:/app/init.sh
+      - ./cdk:/app/cdk
+      - ./credentials/aws:/root/.aws/credentials:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./rie:/app/rie
+      - ./output:/app/output
+    working_dir: /app/cdk
+    env_file:
+      - challenge.env
+    depends_on:
+      - base
